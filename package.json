@@ -1,0 +1,22 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "GoDress backend API",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GoDress-TCC/backend.git"
+  },
+  "author": "Lucas Chaves e Ana Moraes",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/GoDress-TCC/backend/issues"
+  },
+  "homepage": "https://github.com/GoDress-TCC/backend#readme",
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
