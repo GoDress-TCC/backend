@@ -1,11 +1,14 @@
 const mongoose = require('mongoose')
+const dotenv = require('dotenv')
+
+dotenv.config();
 
 async function main() {
     try{
         mongoose.set('strictQuery', true);
         
         await mongoose.connect(
-            'mongodb+srv://lucasChaves:HY14SZZBXaUlfrsc@godress-api.ezdr7ol.mongodb.net/?retryWrites=true&w=majority&appName=godress-api'
+            process.env.URI
         );
 
         console.log('conectado com o banco!')
