@@ -1,3 +1,4 @@
+const { response } = require('express');
 const { User: userModel } = require('../models/User')
 
 const userController = {
@@ -10,13 +11,20 @@ const userController = {
                 password: req.body.password,
                 age: req.body.age,
             }
+            
+            const userExists = await userModel.findOne({ email: email })
 
-            const response = await userModel.create(user);
+            if(userExists) {
+                res.status(422).json({ msg: "Este email já está cadastrado" })
+            }
 
-            res.status(201).json({ response, msg: "Usuário criado com sucesso!" });
+            
+
+            // const response = await userModel.create(user);
+            // res.status(201).json({ response, msg: "Usuário criado com sucesso!" });
         }
         catch(error){
-            console.log(error)
+            res.status(400).json({ msg: error.message })
         }
     }
 };
