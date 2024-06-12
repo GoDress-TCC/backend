@@ -4,6 +4,7 @@ const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const dotenv = require('dotenv')
 const crypto = require('crypto')
+const mailer = require('../modules/mailer')
 
 dotenv.config();
 
@@ -104,6 +105,43 @@ const userController = {
             res.status(500).json({ msg: error.message })
         }
     },
+
+    forgot_password: async (req, res) => {
+        try {
+            const fpassword = {
+                email: req.body.email
+            }
+
+            const user = await userModel.findOne({ email: fpassword.email })
+
+            if (!user) {
+                return res.status(404).json({ msg: "Usuário não encontrado" })
+            }
+
+            const token = crypto.randomBytes(20).toString('hex')
+
+            const now = new Date()
+            now.setHours(now.getHours() + 1)
+
+            await userModel.findByIdAndUpdate(user.id, {
+                '$set': {
+                    passwordResetToken: token,
+                    passwordResetExpires: now
+                }
+            })
+
+            mailer.sendMail({
+                to: user.email,
+                from: 'lucas12chves@gmail.com',
+                template: 'auth/forgot_password',
+                context: { token }
+            })
+
+        }
+        catch (error) {
+            res.status(500).json({ msg: error.message })
+        }
+    }
 };
 
 module.exports = userController;
