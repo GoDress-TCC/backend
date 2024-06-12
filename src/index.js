@@ -10,10 +10,11 @@ app.use(express.json())
 const connection = require('../db/conn')
 connection();
 
-// Models
-const User = require('../models/User')
-
 const port = 3000
+
+app.get('/', (req, res) => {
+    res.status(200).json({ msg: 'Bem vindo a API GoDress' })
+})
 
 // Routes
 const routes = require('../routes/router')
