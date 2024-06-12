@@ -5,8 +5,10 @@ const jwt = require('jsonwebtoken')
 
 dotenv.config();
 
+// rotas de autenticação
 router.route('/auth/register').post((req, res) => userController.create(req, res))
 router.route('/auth/login').post((req, res) => userController.login(req, res))
+
 router.route('/user/:id').get(checkToken, (req, res) => userController.user(req, res))
 
 function checkToken(req, res, next) {
