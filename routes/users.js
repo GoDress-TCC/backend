@@ -9,6 +9,7 @@ dotenv.config();
 router.route('/auth/register').post((req, res) => userController.create(req, res))
 router.route('/auth/login').post((req, res) => userController.login(req, res))
 router.route('/auth/forgot_password').post((req, res) => userController.forgot_password(req, res)) 
+router.route('/auth/reset_password').post((req, res) => userController.reset_password(req, res)) 
 
 router.route('/user/:id').get(checkToken, (req, res) => userController.user(req, res))
 
