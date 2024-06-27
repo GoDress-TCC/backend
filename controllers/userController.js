@@ -11,7 +11,7 @@ dotenv.config();
 const userController = {
     create: async (req, res) => {
         try {
-            const { name, surname, email, password, age } = req.body;
+            const { name, surname, email, password } = req.body;
 
             if (!name) return res.status(400).json({ msg: 'O nome é obrigatório' });
             if (!email) return res.status(400).json({ msg: 'O email é obrigatório' });
@@ -27,8 +27,7 @@ const userController = {
                 name,
                 surname,
                 email,
-                password: hashedPassword,
-                age,
+                password: hashedPassword
             };
 
             const response = await userModel.create(newUser);
@@ -53,8 +52,9 @@ const userController = {
 
             const secret = process.env.SECRET;
             const token = jwt.sign({ id: user._id }, secret);
+            const id = user._id;
 
-            res.status(200).json({ msg: 'Autenticação realizada com sucesso!', token });
+            res.status(200).json({ msg: 'Autenticação realizada com sucesso!', id, token });
         } catch (error) {
             res.status(500).json({ msg: error.message });
         }
@@ -80,7 +80,7 @@ const userController = {
             const user = await userModel.findOne({ email });
             if (!user) return res.status(404).json({ msg: "Usuário não encontrado" });
 
-            const token = crypto.randomBytes(20).toString('hex');
+            const token = crypto.randomBytes(3).toString('hex');
             const now = new Date();
             now.setMinutes(now.getMinutes() + 10);
 
