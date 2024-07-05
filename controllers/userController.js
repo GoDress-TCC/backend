@@ -1,4 +1,3 @@
-const { response } = require('express');
 const { User: userModel } = require('../models/User')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
@@ -62,7 +61,7 @@ const userController = {
 
     user: async (req, res) => {
         try {
-            const { id } = req.params;
+            const id = req.user.id;
 
             const user = await userModel.findById(id, '-password');
             if (!user) return res.status(404).json({ msg: 'Usuário não encontrado!' });

@@ -22,7 +22,6 @@ const userSchema = new mongoose.Schema({
         type: Date,
         select: false
     },
-    age: Date,
 }, { timestamps: true });
 
 const User = mongoose.model('User', userSchema)
