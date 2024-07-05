@@ -10,7 +10,10 @@ const clotheSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Cat'
     },
-    name: {
+    image: {
+        type: String,
+    },
+    type: {
         type: String,
     },
     color: {

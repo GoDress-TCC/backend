@@ -27,8 +27,6 @@ const catController = {
         try {
             const cats = await catModel.find({ userId: req.user.id });
 
-            if (cats.length === 0) return res.status(404).json({ msg: "Não há categorias" });
-
             res.status(200).json(cats);
         }
         catch (error) {
@@ -60,7 +58,7 @@ const catController = {
             const cat = await catModel.findOneAndDelete({ _id: req.params.id, userId: req.user.id })
             if (!cat) return res.status(404).json({ msg: "Categoria não encontrada" });
 
-            res.status(200).json("Categoria deletada com sucesso")
+            res.status(200).json({ msg: "Categoria deletada com sucesso" })
         }
         catch (error) {
             res.status(500).json({ msg: error.message })
