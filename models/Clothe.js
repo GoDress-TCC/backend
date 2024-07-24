@@ -12,9 +12,11 @@ const clotheSchema = new mongoose.Schema({
     },
     image: {
         type: String,
+        required: true
     },
-    type: {
+    kind: {
         type: String,
+        required: true
     },
     color: {
         type: String,
