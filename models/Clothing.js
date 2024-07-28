@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 
-const clotheSchema = new mongoose.Schema({
+const clothingSchema = new mongoose.Schema({
     userId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
@@ -12,28 +12,34 @@ const clotheSchema = new mongoose.Schema({
     },
     image: {
         type: String,
+        required: true
     },
-    type: {
+    kind: {
         type: String,
+        required: true
     },
     color: {
         type: String,
         required: true
     },
-    size: {
-        type: String,
-    },
     fit: {
         type: String,
+        required: true
     },
     gender: {
         type: String
+    },
+    tissue: {
+        type: String
+    },
+    fav: {
+        type: Boolean
     }
 }, { timestamps: true });
 
-const Clothe = mongoose.model('Clothe', clotheSchema)
+const Clothing = mongoose.model('Clothing', clothingSchema)
 
 module.exports = {
-    Clothe,
-    clotheSchema,
+    Clothing,
+    clothingSchema,
 };
