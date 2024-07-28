@@ -1,8 +1,8 @@
 const router = require('express').Router()
-const clotheController = require('../controllers/clotheController')
+const clothingController = require('../controllers/clothingController')
 const authMiddleware = require('../middlewares/auth')
 
-router.route('/').post(authMiddleware, (req, res) => clotheController.create(req, res));
+router.route('/').post(authMiddleware, (req, res) => clothingController.create(req, res));
 
 module.exports = router;
 

@@ -1,10 +1,10 @@
 const router = require('express').Router()
 const usersRouter = require('./users')
 const catsRouter = require('./cats')
-const clothesRouter = require('./clothes')
+const clothingRouter = require('./clothes')
 
 router.use('/', usersRouter);
 router.use('/cat', catsRouter);
-router.use('/clothe', clothesRouter);
+router.use('/clothing', clothingRouter);
 
 module.exports = router;
