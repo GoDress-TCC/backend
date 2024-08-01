@@ -33,6 +33,26 @@ const clothingController = {
             res.status(500).json({ msg: error.message });
         }
     },
+    clothes: async (req, res) => {
+        try {
+            const clothes = await clothingModel.find({ userId: req.user.id });
+
+            res.status(200).json(clothes);
+        }
+        catch (error) {
+            res.status(500).json({ msg: error.message });
+        }
+    },
+    favClothes: async (req, res) => {
+        try {
+            const favClothes = await clothingModel.find({ userId: req.user.id, fav: true })
+  
+            res.status(200).json(favClothes)
+        }
+        catch (error) {
+            res.status(500).json({ msg: error.message })
+        }
+    }
 }
 
 module.exports = clothingController;
