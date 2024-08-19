@@ -4,7 +4,10 @@ const authMiddleware = require('../middlewares/auth')
 
 router.route('/').post(authMiddleware, (req, res) => clothingController.create(req, res));
 router.route('/').get(authMiddleware, (req, res) => clothingController.clothes(req, res));
-router.route('/favs').get(authMiddleware, (req, res) => clothingController.favClothes(req, res));
+router.route('/favs').get(authMiddleware, (req, res) => clothingController.fav_clothes(req, res));
+router.route('/:catId').get(authMiddleware, (req, res) => clothingController.cat_clothes(req, res));
+router.route('/:id').put(authMiddleware, (req, res) => clothingController.update(req, res)); 
+router.route('/:id').delete(authMiddleware, (req, res) => clothingController.delete(req, res));
 
 module.exports = router;
 
