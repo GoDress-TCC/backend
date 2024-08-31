@@ -1,4 +1,4 @@
 node_modules/
 .env
 request.rest
-firebase/serviceAccount.json
+serviceAccount.json

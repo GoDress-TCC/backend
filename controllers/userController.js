@@ -49,7 +49,7 @@ const userController = {
             const checkPassword = await bcrypt.compare(password, user.password);
             if (!checkPassword) return res.status(422).json({ msg: 'Senha inválida!' });
 
-            const secret = process.env.SECRET;
+            const secret = process.env.JWT_SECRET;
             const token = jwt.sign({ id: user._id }, secret);
             const id = user._id;
 

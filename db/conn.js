@@ -8,7 +8,7 @@ async function main() {
         mongoose.set('strictQuery', true);
         
         await mongoose.connect(
-            process.env.URI
+            process.env.MONGODB_URI
         );
 
         console.log('conectado com o banco!')
