@@ -1,4 +1,7 @@
 const { Clothing: clothingModel } = require('../models/Clothing');
+const { removeBackgroundFromImageUrl } = require('remove.bg');
+const { bucket } = require('../firebase/firebaseConfig');
+const { v4: uuiv4 } = require('uuid');
 
 const clothingController = {
     create: async (req, res) => {
@@ -90,9 +93,42 @@ const clothingController = {
             res.status(200).json({ msg: "Roupa deletada com sucesso!" })
         }
         catch (error) {
-            res.status(500).json({ msg: erorr.message })
+            res.status(500).json({ msg: error.message })
         }
-    }
+    },
+    remove_background: async (req, res) => {
+        try {
+            const { image } = req.body;
+
+            if(!image) return res.status(400).json({ msg: "Imagem é obrigatória" });
+        
+            const response = await removeBackgroundFromImageUrl({
+                url: image,
+                apiKey: process.env.REMOVEBG_KEY,
+                size: 'auto',
+                type: 'auto',
+                format: 'auto'
+            });
+
+            const base64img = response.base64img;
+            const buffer = Buffer.from(base64img, 'base64');
+
+            const fileName = `${uuiv4()}.png`;
+            const file = bucket.file(`images/${fileName}`);
+
+            await file.save(buffer, {
+                metadata: { contentType: 'image/png' },
+                public: true,
+            })
+
+            const publicUrl = `https://storage.googleapis.com/${bucket.name}/images/${fileName}`;
+
+            res.status(200).json({ msg: "Imagem processada e enviada com sucesso", imageUrl: publicUrl })
+        }
+        catch (error) {
+            res.status(500).json({ msg: error.message });
+        }
+    }   
 }
 
 module.exports = clothingController;

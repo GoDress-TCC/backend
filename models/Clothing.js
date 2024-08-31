@@ -34,6 +34,9 @@ const clothingSchema = new mongoose.Schema({
     },
     fav: {
         type: Boolean
+    },
+    dirty: {
+        type: Boolean
     }
 }, { timestamps: true });
 

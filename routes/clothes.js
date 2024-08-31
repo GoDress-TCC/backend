@@ -8,6 +8,7 @@ router.route('/favs').get(authMiddleware, (req, res) => clothingController.fav_c
 router.route('/:catId').get(authMiddleware, (req, res) => clothingController.cat_clothes(req, res));
 router.route('/:id').put(authMiddleware, (req, res) => clothingController.update(req, res)); 
 router.route('/:id').delete(authMiddleware, (req, res) => clothingController.delete(req, res));
+router.route('/remove_background').post(authMiddleware, (req, res) => clothingController.remove_background(req, res));
 
 module.exports = router;
 
