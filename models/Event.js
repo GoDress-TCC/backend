@@ -21,6 +21,9 @@ const eventSchema = new mongoose.Schema({
     dateTime: {
         type: Date,
         required: true
+    },
+    Image: {
+        type: String
     }
 }, { timestamps: true });
 
