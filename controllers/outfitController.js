@@ -34,7 +34,7 @@ const calculateCompatibilityScore = (currentOutfit, newClothing, style, temperat
 };
 
 const outfitController = {
-    generateOutfit: async (req, res) => {
+    generate_outfit: async (req, res) => {
         try {
             const { clothingId, catId, style, temperature, fav } = req.body;
             const userId = req.user.id;
@@ -110,7 +110,7 @@ const outfitController = {
             res.status(500).json({ msg: error.message });
         }
     },
-    saveOutfit: async (req, res) => {
+    save_outfit: async (req, res) => {
         try {
             const { clothingId, catId, name, style, temperature } = req.body;
             const userId = req.user.id;
