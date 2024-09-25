@@ -10,25 +10,15 @@ const complementaryColors = (color1, color2) => {
 const calculateCompatibilityScore = (currentOutfit, newClothing, style, temperature) => {
     let score = 0;
 
-    if (currentOutfit.every(item => complementaryColors(item.color, newClothing.color))) {
-        score += 2;
-    }
+    if (currentOutfit.every(item => complementaryColors(item.color, newClothing.color))) score += 2;
 
-    if (currentOutfit.every(item => item.gender === newClothing.gender)) {
-        score += 1;
-    }
+    if (currentOutfit.every(item => item.gender === newClothing.gender)) score += 1;
 
-    if (currentOutfit.every(item => item.tissue === newClothing.tissue)) {
-        score += 1;
-    }
+    if (currentOutfit.every(item => item.tissue === newClothing.tissue)) score += 1;
 
-    if (style && newClothing.style === style) {
-        score += 3;
-    }
+    if (style && newClothing.style === style) score += 3;
 
-    if (temperature && newClothing.temperature === temperature) {
-        score += 3;
-    }
+    if (temperature && newClothing.temperature === temperature) score += 3;
 
     return score;
 };
@@ -39,41 +29,27 @@ const outfitController = {
             const { clothingId, catId, style, temperature, fav } = req.body;
             const userId = req.user.id;
 
+            const filteredClothingIds = Array.isArray(clothingId)
+                ? clothingId.filter(id => id !== undefined && id !== null)
+                : [];
+
             const query = { userId };
 
-            if (catId) {
-                query.catId = catId;
-            }
-
-            if (style) {
-                query.style = style;
-            }
-
-            if (temperature) {
-                query.temperature = temperature;
-            }
-
-            if (fav) {
-                query.fav = fav
-            }
+            if (catId) query.catId = catId;
+            if (style) query.style = style;
+            if (temperature) query.temperature = temperature;
+            if (fav) query.fav = fav;
 
             const clothes = await clothingModel.find(query);
 
-
-            if (clothes.length === 0) {
-                return res.status(400).json({ msg: "Nenhuma roupa encontrada para o usuário" });
-            }
+            if (clothes.length === 0) return res.status(400).json({ msg: "Nenhuma roupa encontrada para o usuário" });
 
             let currentOutfit = [];
 
-            if (clothingId && clothingId.length > 0) {
-                currentOutfit = clothes.filter(item => clothingId.includes(item._id.toString()));
+            if (filteredClothingIds.length > 0) {
+                currentOutfit = clothes.filter(item => filteredClothingIds.includes(item._id.toString()));
             } else {
                 currentOutfit = [clothes[Math.floor(Math.random() * clothes.length)]];
-            }
-
-            if (currentOutfit.length === 0) {
-                currentOutfit = [];
             }
 
             const missingTypes = ['upperBody', 'lowerBody', 'footwear'];
@@ -101,29 +77,47 @@ const outfitController = {
                 }
             }
 
-            if (outfitWithMissingPieces.length < 3) {
-                return res.status(400).json({ msg: "Não foi possível completar o outfit, peças insuficientes" });
-            }
+            const existingOutfit = await OutfitModel.findOne({
+                userId,
+                clothingId: outfitWithMissingPieces.map(item => item._id.toString())
+            });
+
+            if (existingOutfit) return res.status(422).json({ msg: "Este outfit já foi gerado. Tente novamente." });
+            if (outfitWithMissingPieces.length < 3) return res.status(400).json({ msg: "Não foi possível completar o outfit, peças insuficientes" });
+
+
+            const generatedOutfitsCount = await OutfitModel.countDocuments({ userId });
+            const totalPossibleCombinations = Math.pow(clothes.length, 3);
+
+            if (generatedOutfitsCount >= totalPossibleCombinations) return res.status(400).json({ msg: "Todas as combinações possíveis foram geradas" });
 
             res.status(200).json({ msg: "Outfit gerado com sucesso", outfit: outfitWithMissingPieces });
         } catch (error) {
             res.status(500).json({ msg: error.message });
         }
     },
+
     save_outfit: async (req, res) => {
         try {
             const { clothingId, catId, name, style, temperature } = req.body;
             const userId = req.user.id;
 
-            if (!clothingId) return res.status(400).json({ msg: "Roupas são obrigatórias" });
+            const filteredClothingIds = Array.isArray(clothingId)
+                ? clothingId.filter(id => id !== undefined && id !== null)
+                : [];
+
+            if (filteredClothingIds.length === 0) {
+                return res.status(400).json({ msg: "Roupas são obrigatórias" });
+            }
+
             if (!name) return res.status(400).json({ msg: "Nome é obrigatório" });
 
-            const outfitExists = await OutfitModel.findOne({ userId, clothingId });
+            const outfitExists = await OutfitModel.findOne({ userId, clothingId: filteredClothingIds });
             if (outfitExists) return res.status(422).json({ msg: "Este outfit já está cadastrado" });
 
             const newOutfit = {
                 userId: userId,
-                clothingId,
+                clothingId: filteredClothingIds,
                 catId,
                 name,
                 style,
@@ -133,7 +127,7 @@ const outfitController = {
             const response = await OutfitModel.create(newOutfit);
             res.status(201).json({ response, msg: "Outfit cadastrado com sucesso!" });
         } catch (error) {
-            res.status(500).json({ msg: error.message })
+            res.status(500).json({ msg: error.message });
         }
     }
 };
