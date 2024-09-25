@@ -76,20 +76,8 @@ const outfitController = {
                     }
                 }
             }
-
-            const existingOutfit = await OutfitModel.findOne({
-                userId,
-                clothingId: outfitWithMissingPieces.map(item => item._id.toString())
-            });
-
-            if (existingOutfit) return res.status(422).json({ msg: "Este outfit já foi gerado. Tente novamente." });
+    
             if (outfitWithMissingPieces.length < 3) return res.status(400).json({ msg: "Não foi possível completar o outfit, peças insuficientes" });
-
-
-            const generatedOutfitsCount = await OutfitModel.countDocuments({ userId });
-            const totalPossibleCombinations = Math.pow(clothes.length, 3);
-
-            if (generatedOutfitsCount >= totalPossibleCombinations) return res.status(400).json({ msg: "Todas as combinações possíveis foram geradas" });
 
             res.status(200).json({ msg: "Outfit gerado com sucesso", outfit: outfitWithMissingPieces });
         } catch (error) {
@@ -109,8 +97,6 @@ const outfitController = {
             if (filteredClothingIds.length === 0) {
                 return res.status(400).json({ msg: "Roupas são obrigatórias" });
             }
-
-            if (!name) return res.status(400).json({ msg: "Nome é obrigatório" });
 
             const outfitExists = await OutfitModel.findOne({ userId, clothingId: filteredClothingIds });
             if (outfitExists) return res.status(422).json({ msg: "Este outfit já está cadastrado" });
