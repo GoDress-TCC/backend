@@ -3,8 +3,6 @@ const { removeBackgroundFromImageUrl } = require('remove.bg');
 const { bucket } = require('../db/firebase/firebaseConfig')
 const { v4: uuiv4 } = require('uuid');
 
-// A FAZER: Deletar imagem do firebase (DEL e PUT) / Integrar Azure API (create (POST))
-
 const clothingController = {
     create: async (req, res) => {
         try {

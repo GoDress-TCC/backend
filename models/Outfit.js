@@ -23,6 +23,9 @@ const outfitSchema = new mongoose.Schema({
     },
     temperature: {
         type: String
+    },
+    hour: {
+        type: String
     }
 }, { timestamps: true });
 
