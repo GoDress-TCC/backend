@@ -9,9 +9,8 @@ const eventSchema = new mongoose.Schema({
     outfitId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Outfit',
-        required: true
     },
-    Image: {
+    image: {
         type: String
     },
     name: {
@@ -21,7 +20,7 @@ const eventSchema = new mongoose.Schema({
     description: {
         type: String
     },
-    dateTime: {
+    date: {
         type: Date,
         required: true
     },

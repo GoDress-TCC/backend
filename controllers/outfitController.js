@@ -1,9 +1,75 @@
 const { Outfit: OutfitModel } = require("../models/Outfit");
 const { Clothing: clothingModel } = require("../models/Clothing");
+const axios = require("axios");
 const chroma = require("chroma-js");
+const dotenv = require('dotenv')
+
+dotenv.config();
 
 const isDayTime = (hour = new Date().getHours()) => {
-    return hour >= 6 && hour < 18;
+    const currentHour = hour.toString().split(":")[0];
+    return currentHour >= 6 && currentHour < 18;
+};
+
+const getCityCoordinates = async (cityName) => {
+    try {
+        const response = await axios.get(
+            `http://api.openweathermap.org/geo/1.0/direct?q=${cityName}&limit=1&appid=${process.env.OPENWEATHER_API_KEY}`
+        );
+
+        if (response.data.length === 0) {
+            throw new Error("Cidade não encontrada");
+        }
+
+        const { lat, lon } = response.data[0];
+        return { lat, lon };
+    } catch (error) {
+        console.log("Erro ao obter coordenadas da cidade");
+        throw new Error(error.message);
+    }
+};
+
+const getWeatherForecast = async (cityName, date) => {
+    const { lat, lon } = await getCityCoordinates(cityName);
+    const unixDate = Math.floor(new Date(date).getTime() / 1000);
+
+    try {
+        const response = await axios.get(
+            `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&dt=${unixDate}&appid=${process.env.OPENWEATHER_API_KEY}&units=metric`
+        );
+
+        const closestForecast = response.data.list.reduce((closest, current) => {
+            const timeDiff = Math.abs(current.dt - unixDate);
+            const closestDiff = Math.abs(closest.dt - unixDate || Infinity);
+            return timeDiff < closestDiff ? current : closest;
+        }, {});
+
+        let temperatureCategoty;
+
+        if (!closestForecast) {
+            temperatureCategoty = "mild";
+            throw new Error("Não foi possível encontrar uma previsão próxima");
+        }
+
+        const temperature = closestForecast.main.temp;
+        console.log(temperature);
+
+        if (temperature < 15) {
+            temperatureCategoty = "cold";
+        }
+        if (temperature >= 15 && temperature < 25) {
+            temperatureCategoty = "mild"; 
+        }
+        if (temperature >= 25) {
+            temperatureCategoty = "hot";
+        }
+
+        return temperatureCategoty;
+    } catch (error) {
+        console.log("Erro ao obter temperatura");
+        console.log({ lat, lon, unixDate });
+        throw new Error(error.message);
+    }
 };
 
 const complementaryColors = (color1, color2, isDay) => {
@@ -12,7 +78,7 @@ const complementaryColors = (color1, color2, isDay) => {
     return distance < tolerance;
 };
 
-const calculateCompatibilityScore = (currentOutfit, newClothing, style, temperature, isDay) => {
+const calculateCompatibilityScore = (currentOutfit, newClothing, isDay) => {
     let score = 0;
 
     const iluminance = chroma(newClothing.color).luminance();
@@ -22,8 +88,8 @@ const calculateCompatibilityScore = (currentOutfit, newClothing, style, temperat
 
     if (currentOutfit.every(item => item.gender === newClothing.gender)) score += 1;
     if (currentOutfit.every(item => item.tissue === newClothing.tissue)) score += 1;
-    if (style && newClothing.style === style) score += 3;
-    if (temperature && newClothing.temperature === temperature) score += 3;
+    if (currentOutfit.every(item => item.style === newClothing.style)) score += 1;
+    if (currentOutfit.every(item => item.temperature === newClothing.temperature)) score += 1;
 
     return score;
 };
@@ -31,7 +97,7 @@ const calculateCompatibilityScore = (currentOutfit, newClothing, style, temperat
 const outfitController = {
     generate_outfit: async (req, res) => {
         try {
-            const { clothingId, catId, style, temperature, fav, hour } = req.body;
+            const { clothingId, catId, style, temperature, fav, hour, location } = req.body;
             const userId = req.user.id;
 
             const filteredClothingIds = Array.isArray(clothingId)
@@ -41,10 +107,25 @@ const outfitController = {
             const query = { userId };
             if (catId) query.catId = catId;
             if (style) query.style = style;
-            if (temperature) query.temperature = temperature;
+            if (temperature) {
+                if (temperature === "hot" || temperature === "cold") {
+                    query.temperature = temperature;
+                } else if (temperature === "current") {
+                    const currentTemperature = await getWeatherForecast(location, new Date());
+                    if (currentTemperature !== "mild") {
+                        query.temperature = currentTemperature;
+                    }
+                } else {
+                    const currentTemperature = await getWeatherForecast(location, temperature);
+                    if (currentTemperature !== "mild") {
+                        query.temperature = currentTemperature;
+                    }
+                }
+            }
             if (fav) query.fav = fav;
 
             const clothes = await clothingModel.find(query);
+
             if (clothes.length === 0) return res.status(400).json({ msg: "Nenhuma roupa encontrada para o usuário" });
 
             let currentOutfit = [];
@@ -54,7 +135,7 @@ const outfitController = {
                 currentOutfit = [clothes[Math.floor(Math.random() * clothes.length)]];
             }
 
-            const isDay = hour ? isDayTime(hour) : isDayTime();  
+            const isDay = hour ? isDayTime(hour) : isDayTime();
 
             const missingTypes = ['upperBody', 'lowerBody', 'footwear'];
             const outfitWithMissingPieces = [...currentOutfit];
@@ -67,7 +148,7 @@ const outfitController = {
                     let highestScore = -1;
 
                     potentialClothes.forEach(clothing => {
-                        const score = calculateCompatibilityScore(currentOutfit, clothing, style, temperature, isDay);
+                        const score = calculateCompatibilityScore(currentOutfit, clothing, isDay);
 
                         if (score > highestScore) {
                             highestScore = score;
@@ -83,7 +164,7 @@ const outfitController = {
 
             if (outfitWithMissingPieces.length < 3) return res.status(400).json({ msg: "Não foi possível completar o outfit, peças insuficientes" });
 
-            res.status(200).json({ msg: "Outfit gerado com sucesso", outfit: outfitWithMissingPieces });
+            res.status(200).json({ msg: "Outfit gerado com sucesso", hour: isDay, outfit: outfitWithMissingPieces });
         } catch (error) {
             res.status(500).json({ msg: error.message });
         }

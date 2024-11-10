@@ -25,7 +25,7 @@ const outfitSchema = new mongoose.Schema({
         type: String
     },
     hour: {
-        type: String
+        type: String,
     }
 }, { timestamps: true });
 
