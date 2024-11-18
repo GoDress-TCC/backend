@@ -73,14 +73,11 @@ const clothingController = {
     },
     update: async (req, res) => {
         try {
+            const ids = req.params.id.split(',');
             const userId = req.user.id;
             const updatedFields = req.body;
 
-            const updateClothing = await clothingModel.findOneAndUpdate(
-                { _id: req.params.id, userId },
-                { $set: updatedFields },
-                { new: true }
-            );
+            const updateClothing = await clothingModel.updateMany({ _id: { $in: ids }, userId }, updatedFields);
 
             if (!updateClothing) return res.status(404).json({ msg: "Roupa não encontrada" });
 
@@ -92,10 +89,12 @@ const clothingController = {
     },
     delete: async (req, res) => {
         try {
-            const deleteClothing = await clothingModel.findOneAndDelete({ _id: req.params.id, userId: req.user.id });
-            if (!deleteClothing) return res.status(404).json({ msg: "Roupa não encontrada!" });
+            const ids = req.params.id.split(',');
+            
+            const deleteClothes = await clothingModel.deleteMany({ _id: { $in: ids }, userId: req.user.id });
+            if (!deleteClothes) return res.status(404).json({ msg: "Roupa não encontrada!" });
 
-            res.status(200).json({ msg: "Roupa deletada com sucesso!" })
+            res.status(200).json({ msg: `Roupa${ids.length > 1 ? "s" : ""} deletada${ids.length > 1 ? "s" : ""} com sucesso!` })
         }
         catch (error) {
             res.status(500).json({ msg: error.message })
