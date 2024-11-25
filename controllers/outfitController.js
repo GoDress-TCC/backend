@@ -169,7 +169,6 @@ const outfitController = {
             res.status(500).json({ msg: error.message });
         }
     },
-
     save_outfit: async (req, res) => {
         try {
             const { clothingId, catId, name, style, temperature, hour } = req.body;
@@ -198,6 +197,17 @@ const outfitController = {
 
             const response = await OutfitModel.create(newOutfit);
             res.status(201).json({ response, msg: "Outfit cadastrado com sucesso!" });
+        } catch (error) {
+            res.status(500).json({ msg: error.message });
+        }
+    },
+    outfits: async (req, res) => {
+        try {
+            const userId = req.user.id;
+
+            const outfits = await OutfitModel.find({ userId }).populate("clothingId");
+            
+            res.status(200).json(outfits);
         } catch (error) {
             res.status(500).json({ msg: error.message });
         }

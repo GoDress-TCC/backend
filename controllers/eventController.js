@@ -3,11 +3,12 @@ const { Event: eventModel } = require('../models/Event');
 const eventController = {
     create: async (req, res) => {
         try {
-            const { outfitId, image, name, description, date } = req.body;
+            const { outfitId, image, name, description, date, location } = req.body;
             const userId = req.user.id;
 
             if (!name) return res.status(400).json({ msg: "Nome é obrigatório" });
             if (!date) return res.status(400).json({ msg: "Data é obrigatória" });
+            if (!location) return res.status(400).json({ msg: "Local é obrigatório" });
 
             const currentDate = new Date();
             if (new Date(date) < currentDate) return res.status(400).json({ msg: "Data inválida" });
@@ -19,6 +20,7 @@ const eventController = {
                 name,
                 description,
                 date,
+                location
             };
 
             const response = await eventModel.create(newEvent);

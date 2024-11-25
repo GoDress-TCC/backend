@@ -51,26 +51,6 @@ const clothingController = {
             res.status(500).json({ msg: error.message });
         }
     },
-    fav_clothes: async (req, res) => {
-        try {
-            const favClothes = await clothingModel.find({ userId: req.user.id, fav: true })
-
-            res.status(200).json(favClothes)
-        }
-        catch (error) {
-            res.status(500).json({ msg: error.message })
-        }
-    },
-    cat_clothes: async (req, res) => {
-        try {
-            const catClothes = await clothingModel.find({ catId: req.params.catId, userId: req.user.id })
-
-            res.status(200).json(catClothes)
-        }
-        catch (error) {
-            res.status(500).json({ msg: error.message })
-        }
-    },
     update: async (req, res) => {
         try {
             const ids = req.params.id.split(',');
