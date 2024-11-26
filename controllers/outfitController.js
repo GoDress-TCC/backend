@@ -58,7 +58,7 @@ const getWeatherForecast = async (cityName, date) => {
             temperatureCategoty = "cold";
         }
         if (temperature >= 15 && temperature < 25) {
-            temperatureCategoty = "mild"; 
+            temperatureCategoty = "mild";
         }
         if (temperature >= 25) {
             temperatureCategoty = "hot";
@@ -97,7 +97,7 @@ const calculateCompatibilityScore = (currentOutfit, newClothing, isDay) => {
 const outfitController = {
     generate_outfit: async (req, res) => {
         try {
-            const { clothingId, catId, style, temperature, fav, hour, location } = req.body;
+            const { clothingId, catId, style, temperature, fav, hour, location, generateMultiple = false } = req.body;
             const userId = req.user.id;
 
             const filteredClothingIds = Array.isArray(clothingId)
@@ -128,47 +128,63 @@ const outfitController = {
 
             if (clothes.length === 0) return res.status(400).json({ msg: "Nenhuma roupa encontrada para o usuário" });
 
-            let currentOutfit = [];
-            if (filteredClothingIds.length > 0) {
-                currentOutfit = clothes.filter(item => filteredClothingIds.includes(item._id.toString()));
-            } else {
-                currentOutfit = [clothes[Math.floor(Math.random() * clothes.length)]];
-            }
-
             const isDay = hour ? isDayTime(hour) : isDayTime();
+            const outfits = [];
+            const maxOutfits = generateMultiple ? 3 : 1; 
 
-            const missingTypes = ['upperBody', 'lowerBody', 'footwear'];
-            const outfitWithMissingPieces = [...currentOutfit];
+            for (let i = 0; i < maxOutfits; i++) {
+                let currentOutfit = [];
+                if (filteredClothingIds.length > 0) {
+                    currentOutfit = clothes.filter(item => filteredClothingIds.includes(item._id.toString()));
+                } else {
+                    currentOutfit = [clothes[Math.floor(Math.random() * clothes.length)]];
+                }
 
-            for (const type of missingTypes) {
-                if (!currentOutfit.some(item => item.type === type)) {
-                    const potentialClothes = clothes.filter(item => item.type === type);
+                const missingTypes = ['upperBody', 'lowerBody', 'footwear'];
+                const outfitWithMissingPieces = [...currentOutfit];
 
-                    let bestClothing = null;
-                    let highestScore = -1;
+                for (const type of missingTypes) {
+                    if (!currentOutfit.some(item => item.type === type)) {
+                        const potentialClothes = clothes.filter(item => item.type === type);
 
-                    potentialClothes.forEach(clothing => {
-                        const score = calculateCompatibilityScore(currentOutfit, clothing, isDay);
+                        let bestClothing = null;
+                        let highestScore = -1;
 
-                        if (score > highestScore) {
-                            highestScore = score;
-                            bestClothing = clothing;
+                        potentialClothes.forEach(clothing => {
+                            const score = calculateCompatibilityScore(currentOutfit, clothing, isDay);
+
+                            if (score > highestScore) {
+                                highestScore = score;
+                                bestClothing = clothing;
+                            }
+                        });
+
+                        if (bestClothing) {
+                            outfitWithMissingPieces.push(bestClothing);
                         }
-                    });
-
-                    if (bestClothing) {
-                        outfitWithMissingPieces.push(bestClothing);
                     }
                 }
+
+                if (outfitWithMissingPieces.length >= 3) {
+                    outfits.push(outfitWithMissingPieces);
+                }
+
+                clothes.splice(clothes.findIndex(item => outfitWithMissingPieces.includes(item)), outfitWithMissingPieces.length);
+                if (clothes.length < 3) break; 
             }
 
-            if (outfitWithMissingPieces.length < 3) return res.status(400).json({ msg: "Não foi possível completar o outfit, peças insuficientes" });
+            if (outfits.length === 0) return res.status(400).json({ msg: "Não foi possível gerar o outfit, peças insuficientes" });
 
-            res.status(200).json({ msg: "Outfit gerado com sucesso", hour: isDay, outfit: outfitWithMissingPieces });
+            const response = generateMultiple
+                ? { msg: "Outfits gerados com sucesso", hour: isDay, outfits }
+                : { msg: "Outfit gerado com sucesso", hour: isDay, outfit: outfits[0] };
+
+            res.status(200).json(response);
         } catch (error) {
             res.status(500).json({ msg: error.message });
         }
     },
+
     save_outfit: async (req, res) => {
         try {
             const { clothingId, catId, name, style, temperature, hour } = req.body;
@@ -206,7 +222,7 @@ const outfitController = {
             const userId = req.user.id;
 
             const outfits = await OutfitModel.find({ userId }).populate("clothingId");
-            
+
             res.status(200).json(outfits);
         } catch (error) {
             res.status(500).json({ msg: error.message });

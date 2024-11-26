@@ -3,7 +3,7 @@ const { Event: eventModel } = require('../models/Event');
 const eventController = {
     create: async (req, res) => {
         try {
-            const { outfitId, image, name, description, date, location } = req.body;
+            const { outfitId, image, name, date, location } = req.body;
             const userId = req.user.id;
 
             if (!name) return res.status(400).json({ msg: "Nome é obrigatório" });
@@ -18,7 +18,6 @@ const eventController = {
                 outfitId,
                 image,
                 name,
-                description,
                 date,
                 location
             };
