@@ -130,7 +130,7 @@ const outfitController = {
 
             const isDay = hour ? isDayTime(hour) : isDayTime();
             const outfits = [];
-            const maxOutfits = generateMultiple ? 3 : 1; 
+            const maxOutfits = generateMultiple ? 3 : 1;
 
             for (let i = 0; i < maxOutfits; i++) {
                 let currentOutfit = [];
@@ -166,11 +166,17 @@ const outfitController = {
                 }
 
                 if (outfitWithMissingPieces.length >= 3) {
-                    outfits.push(outfitWithMissingPieces);
+                    const orderedOutfit = outfitWithMissingPieces.sort((a, b) => {
+                        const order = ['upperBody', 'lowerBody', 'footwear'];
+                        return order.indexOf(a.type) - order.indexOf(b.type);
+                    });
+
+                    outfits.push(orderedOutfit);
                 }
 
+
                 clothes.splice(clothes.findIndex(item => outfitWithMissingPieces.includes(item)), outfitWithMissingPieces.length);
-                if (clothes.length < 3) break; 
+                if (clothes.length < 3) break;
             }
 
             if (outfits.length === 0) return res.status(400).json({ msg: "Não foi possível gerar o outfit, peças insuficientes" });
