@@ -9,6 +9,7 @@ const eventSchema = new mongoose.Schema({
     outfitId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Outfit',
+        required: true
     },
     image: {
         type: String

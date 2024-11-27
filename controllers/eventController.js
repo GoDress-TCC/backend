@@ -6,9 +6,13 @@ const eventController = {
             const { outfitId, image, name, date, location } = req.body;
             const userId = req.user.id;
 
+            if (!outfitId) return res.status(400).json({ msg: "Adicione um outfit" });
             if (!name) return res.status(400).json({ msg: "Nome é obrigatório" });
             if (!date) return res.status(400).json({ msg: "Data é obrigatória" });
             if (!location) return res.status(400).json({ msg: "Local é obrigatório" });
+
+            eventExists = await eventModel.findOne({ name, userId });
+            if (eventExists) return res.status(400).json({ msg: "Evento já cadastrado" });
 
             const currentDate = new Date();
             if (new Date(date) < currentDate) return res.status(400).json({ msg: "Data inválida" });

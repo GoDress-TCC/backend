@@ -17,6 +17,7 @@ const outfitSchema = new mongoose.Schema({
     },
     name: {
         type: String,
+        required: true
     },
     style: {
         type: String,

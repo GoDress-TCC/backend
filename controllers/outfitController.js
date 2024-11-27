@@ -97,7 +97,7 @@ const calculateCompatibilityScore = (currentOutfit, newClothing, isDay) => {
 const outfitController = {
     generate_outfit: async (req, res) => {
         try {
-            const { clothingId, catId, style, temperature, fav, hour, location, generateMultiple = false } = req.body;
+            const { clothingId, catId, style, temperature, fav, hour, location, generateMultiple = false, useDirtyClothes = false } = req.body;
             const userId = req.user.id;
 
             const filteredClothingIds = Array.isArray(clothingId)
@@ -123,6 +123,7 @@ const outfitController = {
                 }
             }
             if (fav) query.fav = fav;
+            if (!useDirtyClothes) query.dirty = false;
 
             const clothes = await clothingModel.find(query);
 
@@ -196,6 +197,8 @@ const outfitController = {
             const { clothingId, catId, name, style, temperature, hour } = req.body;
             const userId = req.user.id;
 
+            if(!name) return res.status(400).json({ msg: "Nome é obrigatório" });
+
             const filteredClothingIds = Array.isArray(clothingId)
                 ? clothingId.filter(id => id !== undefined && id !== null)
                 : [];
@@ -205,7 +208,7 @@ const outfitController = {
             }
 
             const outfitExists = await OutfitModel.findOne({ userId, clothingId: filteredClothingIds });
-            if (outfitExists) return res.status(422).json({ msg: "Este outfit já está cadastrado" });
+            if (outfitExists) return res.status(422).json({ msg: "Este esta combinação já está cadastrado" });
 
             const newOutfit = {
                 userId: userId,
@@ -218,7 +221,7 @@ const outfitController = {
             };
 
             const response = await OutfitModel.create(newOutfit);
-            res.status(201).json({ response, msg: "Outfit cadastrado com sucesso!" });
+            res.status(201).json(response);
         } catch (error) {
             res.status(500).json({ msg: error.message });
         }
