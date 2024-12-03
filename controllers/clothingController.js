@@ -22,15 +22,15 @@ const clothingController = {
 
             const newClothing = {
                 userId: userId,
-                catId, 
-                image, 
-                kind, 
-                type, 
-                color, 
-                style, 
-                temperature, 
-                gender, 
-                tissue, 
+                catId,
+                image,
+                kind,
+                type,
+                color,
+                style,
+                temperature,
+                gender,
+                tissue,
                 fav
             };
 
@@ -55,22 +55,33 @@ const clothingController = {
         try {
             const ids = req.params.id.split(',');
             const userId = req.user.id;
-            const updatedFields = req.body;
-
-            const updateClothing = await clothingModel.updateMany({ _id: { $in: ids }, userId }, updatedFields);
-
-            if (!updateClothing) return res.status(404).json({ msg: "Roupa não encontrada" });
-
-            res.status(200).json({ msg: 'Roupa atualizada com sucesso!', updateClothing });
+            const { catId, ...otherFields } = req.body;
+    
+            const updateQuery = { ...otherFields }; 
+    
+            if (catId && Array.isArray(catId)) {
+                updateQuery.$addToSet = { catId: { $each: catId } }; 
+            }
+    
+            const updateClothing = await clothingModel.updateMany(
+                { _id: { $in: ids }, userId },
+                updateQuery
+            );
+    
+            if (!updateClothing.matchedCount) {
+                return res.status(404).json({ msg: "Nenhuma roupa encontrada para atualizar." });
+            }
+    
+            res.status(200).json({ msg: 'Roupa(s) atualizada(s) com sucesso!', updateClothing });
         }
         catch (error) {
-            res.status(500).json({ msg: error.message })
+            res.status(500).json({ msg: error.message });
         }
     },
     delete: async (req, res) => {
         try {
             const ids = req.params.id.split(',');
-            
+
             const deleteClothes = await clothingModel.deleteMany({ _id: { $in: ids }, userId: req.user.id });
             if (!deleteClothes) return res.status(404).json({ msg: "Roupa não encontrada!" });
 
@@ -84,8 +95,8 @@ const clothingController = {
         try {
             const { image } = req.body;
 
-            if(!image) return res.status(400).json({ msg: "Imagem é obrigatória" });
-        
+            if (!image) return res.status(400).json({ msg: "Imagem é obrigatória" });
+
             const response = await removeBackgroundFromImageUrl({
                 url: image,
                 apiKey: process.env.REMOVEBG_KEY,
@@ -112,7 +123,7 @@ const clothingController = {
         catch (error) {
             res.status(500).json({ msg: error.message });
         }
-    }   
+    }
 }
 
 module.exports = clothingController;

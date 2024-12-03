@@ -6,10 +6,10 @@ const clothingSchema = new mongoose.Schema({
         ref: 'User',
         required: true
     },
-    catId: {
+    catId: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Cat'
-    },
+    }],
     image: {
         type: String,
         required: true
