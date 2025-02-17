@@ -6,7 +6,7 @@ dotenv.config();
 const authMiddleware = (req, res, next) => {
     try {
         const token = req.header('Authorization').replace('Bearer ', '');
-        const secret = process.env.SECRET;
+        const secret = process.env.JWT_SECRET;
         const decoded = jwt.verify(token, secret);
         req.user = decoded;
         next();

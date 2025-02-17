@@ -10,11 +10,12 @@ dotenv.config();
 const userController = {
     create: async (req, res) => {
         try {
-            const { name, surname, email, password } = req.body;
+            const { name, surname, email, password, gender } = req.body;
 
             if (!name) return res.status(400).json({ msg: 'O nome é obrigatório' });
             if (!email) return res.status(400).json({ msg: 'O email é obrigatório' });
             if (!password) return res.status(400).json({ msg: 'A senha é obrigatória' });
+            if (!gender) return res.status(400).json({ msg: 'A gênero é obrigatório' }); 
 
             const userExists = await userModel.findOne({ email });
             if (userExists) return res.status(422).json({ msg: "Este email já está cadastrado" });
@@ -26,7 +27,8 @@ const userController = {
                 name,
                 surname,
                 email,
-                password: hashedPassword
+                password: hashedPassword,
+                gender
             };
 
             const response = await userModel.create(newUser);
@@ -49,7 +51,7 @@ const userController = {
             const checkPassword = await bcrypt.compare(password, user.password);
             if (!checkPassword) return res.status(422).json({ msg: 'Senha inválida!' });
 
-            const secret = process.env.SECRET;
+            const secret = process.env.JWT_SECRET;
             const token = jwt.sign({ id: user._id }, secret);
             const id = user._id;
 

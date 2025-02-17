@@ -11,6 +11,9 @@ const eventSchema = new mongoose.Schema({
         ref: 'Outfit',
         required: true
     },
+    image: {
+        type: String
+    },
     name: {
         type: String,
         required: true
@@ -18,10 +21,14 @@ const eventSchema = new mongoose.Schema({
     description: {
         type: String
     },
-    dateTime: {
+    date: {
         type: Date,
         required: true
-    }
+    },
+    location: {
+        type: String,
+        required: true
+    },
 }, { timestamps: true });
 
 const Event = mongoose.model('Event', eventSchema)

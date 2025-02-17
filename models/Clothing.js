@@ -6,33 +6,45 @@ const clothingSchema = new mongoose.Schema({
         ref: 'User',
         required: true
     },
-    catId: {
+    catId: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Cat'
-    },
+    }],
     image: {
         type: String,
         required: true
     },
     kind: {
         type: String,
-        required: true
+        required: true,
+    },
+    type: {
+        type: String,
+        required: true,
     },
     color: {
         type: String,
         required: true
     },
-    fit: {
+    style: {
+        type: String,
+        required: true
+    },
+    temperature: {
         type: String,
         required: true
     },
     gender: {
-        type: String
+        type: String,
+        required: true
     },
     tissue: {
-        type: String
+        type: String,
     },
     fav: {
+        type: Boolean
+    },
+    dirty: {
         type: Boolean
     }
 }, { timestamps: true });

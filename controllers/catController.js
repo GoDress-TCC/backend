@@ -36,27 +36,29 @@ const catController = {
     update: async (req, res) => {
         try {
             const { name } = req.body;
+            const updatedFields = req.body;
             const userId = req.user.id;
-
-            const cat = await catModel.findOne({ _id: req.params.id, userId });
-            if (!cat) return res.status(404).json({ msg: "Categoria não encontrada" });
 
             const catExists = await catModel.findOne({ name });
             if (catExists) return res.status(422).json({ msg: "Esta categoria já está cadastrada" });
 
-            cat.name = name;
+            const updateCat = await catModel.findOneAndUpdate(
+                { _id: req.params.id, userId },
+                { $set: updatedFields },
+                { new: true }
+            );
 
-            await cat.save();
+            if (!updateCat) return res.status(404).json({ msg: "Categoria não encontrada" });
 
-            res.status(200).json({ msg: "Categoria atualizada com sucesso" });
+            res.status(200).json({ msg: 'Categoria atualizada com sucesso!', updateCat });
         } catch (error) {
             res.status(400).json({ msg: error.message });
         }
     },
     delete: async (req, res) => {
         try {
-            const cat = await catModel.findOneAndDelete({ _id: req.params.id, userId: req.user.id })
-            if (!cat) return res.status(404).json({ msg: "Categoria não encontrada" });
+            const deleteCat = await catModel.findOneAndDelete({ _id: req.params.id, userId: req.user.id })
+            if (!deleteCat) return res.status(404).json({ msg: "Categoria não encontrada" });
 
             res.status(200).json({ msg: "Categoria deletada com sucesso" })
         }

@@ -6,23 +6,27 @@ const outfitSchema = new mongoose.Schema({
         ref: 'User',
         required: true
     },
-    clotheId: [{
+    clothingId: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Clothe',
+        ref: 'Clothing',
         required: true 
     }],
     catId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Cat'
+        ref: 'Cat' 
     },
     name: {
         type: String,
+        required: true
     },
-    description : {
+    style: {
+        type: String,
+    },
+    temperature: {
         type: String
     },
-    fav: {
-        type: Boolean
+    hour: {
+        type: String,
     }
 }, { timestamps: true });
 
